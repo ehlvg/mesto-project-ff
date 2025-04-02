@@ -8,8 +8,8 @@ const createCard = (data, deleteCallback) => {
   const deleteButton = cardElement.querySelector(".card__delete-button");
 
   cardTitle.textContent = data.name;
-  cardImage.style.backgroundImage = `url(${data.link})`;
-
+  cardImage.src = data.link;
+  cardImage.alt = `Фотография места: ${data.name}`;
   deleteButton.addEventListener("click", deleteCallback);
 
   return cardElement;
