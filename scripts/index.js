@@ -20,11 +20,6 @@ const deleteCard = (evt) => {
   card.remove();
 };
 
-const renderCard = (data) => {
-  const cardElement = createCard(data);
-  placesList.prepend(cardElement);
-};
-
 initialCards.forEach((data) => {
   const cardElement = createCard(data, deleteCard);
   placesList.append(cardElement);
