@@ -26,6 +26,8 @@ export const popupOpenHandler = (evt) => {
   if (evt.target.classList.contains("profile__edit-button")) {
     const popup = document.querySelector(".popup_type_edit");
     openPopup(popup);
+    document.forms["edit-profile"].elements["name"].value = document.querySelector(".profile__title").textContent;
+    document.forms["edit-profile"].elements["description"].value = document.querySelector(".profile__description").textContent;
   }
 };
 
