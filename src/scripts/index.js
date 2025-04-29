@@ -1,4 +1,4 @@
-import "./styles/index.css";
+import "../styles/index.css";
 import "./profileEdit.js";
 import "./cardAdd.js";
 import { openPopup } from "./popups.js";
@@ -37,7 +37,7 @@ export const createCard = (
   data,
   deleteCallback,
   likeCallback,
-  clickCallback
+  clickCallback,
 ) => {
   const cardElement = cardTemplate.cloneNode(true);
   const cardImage = cardElement.querySelector(".card__image");
