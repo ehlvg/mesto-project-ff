@@ -1,6 +1,6 @@
 import "../styles/index.css";
-import { closePopup, openPopup, popupOverlayClickHandler } from "./popups.js";
-import { createCard } from "./card.js";
+import { closePopup, escapeKeyHandler, openPopup, popupOverlayClickHandler } from "./popups.js";
+import { createCard, likeCard, deleteCard } from "./card.js";
 
 const initialCards = [
   {
@@ -36,8 +36,25 @@ const popups = document.querySelectorAll(".popup");
 const editProfileButton = document.querySelector(".profile__edit-button");
 const newCardButton = document.querySelector(".profile__add-button");
 
+const openImageHandler = (evt) => {
+  const card = evt.target.closest(".card");
+  const imageSrc = card.querySelector(".card__image").src;
+  const imageCaption = card.querySelector(".card__title").textContent;
+
+  const imagePopup = document.querySelector(".popup_type_image");
+  imagePopup.querySelector(".popup__image").src = imageSrc;
+  imagePopup.querySelector(".popup__caption").textContent = imageCaption;
+  imagePopup.classList.add("popup_is-opened");
+  imagePopup.addEventListener('keydown', escapeKeyHandler);
+  openPopup(imagePopup);
+};
+
 initialCards.forEach((data) => {
-  const cardElement = createCard(data, template);
+  const cardElement = createCard(data, template, {
+    deleteCallback: deleteCard,
+    likeCallback: likeCard,
+    clickCallback: openImageHandler
+  });
   placesList.append(cardElement);
 });
 
@@ -74,7 +91,12 @@ const handlePlaceFormSubmit = (evt) => {
       name: placeNameInput.value,
       link: linkInput.value,
     },
-    template
+    template,
+    {
+        deleteCallback: deleteCard,
+        likeCallback: likeCard,
+        clickCallback: openImageHandler
+    }
   );
 
   placesList.prepend(cardElement);
