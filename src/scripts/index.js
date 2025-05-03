@@ -44,8 +44,6 @@ const openImageHandler = (evt) => {
   const imagePopup = document.querySelector(".popup_type_image");
   imagePopup.querySelector(".popup__image").src = imageSrc;
   imagePopup.querySelector(".popup__caption").textContent = imageCaption;
-  imagePopup.classList.add("popup_is-opened");
-  imagePopup.addEventListener('keydown', escapeKeyHandler);
   openPopup(imagePopup);
 };
 
