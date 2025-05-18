@@ -47,14 +47,22 @@
               class="popup__input popup__input_type_name"
               placeholder="Имя"
               required
+              pattern="[A-Za-zА-Яа-яЁё\s-]+"
+              minlength="2"
+              maxlength="40"
             />
+            <p class="popup__error" id="name-error"></p>
             <input
               type="text"
               name="description"
               class="popup__input popup__input_type_description"
               placeholder="Занятие"
+              minlength="2"
+              pattern="[A-Za-zА-Яа-яЁё\s-]+"
+              maxlength="200"
               required
             />
+            <p class="popup__error" id="description-error"></p>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>
@@ -69,17 +77,21 @@
             <input
               type="text"
               name="place-name"
+              id="place-name"
               class="popup__input popup__input_type_card-name"
               placeholder="Название"
               required
             />
+            <p class="popup__error" id="place-name-error"></p>
             <input
               type="url"
               name="link"
+              id="link"
               class="popup__input popup__input_type_url"
               placeholder="Ссылка на картинку"
               required
             />
+            <p class="popup__error" id="link-error"></p>
             <button type="submit" class="button popup__button">
               Сохранить
             </button>
@@ -95,7 +107,6 @@
       </div>
     </div>
     <script src="./index.js" defer></script>
-    <script src="./cards.js"></script>
     <template id="card-template">
       <li class="places__item card">
         <img class="card__image" src="" alt="" />

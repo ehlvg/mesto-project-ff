@@ -1,6 +1,7 @@
 import "../styles/index.css";
 import { closePopup, escapeKeyHandler, openPopup, popupOverlayClickHandler } from "./popups.js";
 import { createCard, likeCard, deleteCard } from "./card.js";
+import { enableValidation, clearValidation } from "./validation.js";
 
 const initialCards = [
   {
@@ -66,6 +67,17 @@ const newPlaceFormElement = document.forms["new-place"];
 const placeNameInput = newPlaceFormElement.elements["place-name"];
 const linkInput = newPlaceFormElement.elements["link"];
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_inactive',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
+
+enableValidation(validationConfig);
+
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
 
@@ -105,6 +117,8 @@ const handlePlaceFormSubmit = (evt) => {
 const handleNewCardPopup = (evt) => {
   const popup = document.querySelector(".popup_type_new-card");
   openPopup(popup);
+  document.forms["new-place"].reset();
+  clearValidation(document.forms["new-place"], validationConfig);
 };
 
 const handleEditProfilePopup = (evt) => {
@@ -112,9 +126,17 @@ const handleEditProfilePopup = (evt) => {
   openPopup(popup);
   document.forms["edit-profile"].elements["name"].value = document.querySelector(".profile__title").textContent;
   document.forms["edit-profile"].elements["description"].value = document.querySelector(".profile__description").textContent;
+  clearValidation(document.forms["edit-profile"], validationConfig);
 };
 
-/* Инициализация слушателей */
+const editPopup = document.querySelector('.popup_type_edit');
+if (editPopup) {
+  editPopup.addEventListener('transitionend', (evt) => {
+    if (!editPopup.classList.contains('popup_is-opened')) {
+      clearValidation(document.forms["edit-profile"], validationConfig);
+    }
+  });
+}
 
 popupCloseButtons.forEach((item) => {
   item.addEventListener("click", closePopup);
