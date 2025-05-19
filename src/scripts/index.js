@@ -1,34 +1,18 @@
 import "../styles/index.css";
 import { closePopup, escapeKeyHandler, openPopup, popupOverlayClickHandler } from "./popups.js";
-import { createCard, likeCard, deleteCard } from "./card.js";
+import { createCard } from "./card.js";
 import { enableValidation, clearValidation } from "./validation.js";
+import {
+  getUserInfo,
+  getInitialCards,
+  updateUserInfo,
+  addCard as apiAddCard,
+  deleteCard as apiDeleteCard,
+  likeCard as apiLikeCard,
+  unlikeCard as apiUnlikeCard
+} from "./api.js";
 
-const initialCards = [
-  {
-    name: "Архыз",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg",
-  },
-  {
-    name: "Челябинская область",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg",
-  },
-  {
-    name: "Иваново",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg",
-  },
-  {
-    name: "Камчатка",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg",
-  },
-  {
-    name: "Холмогорский район",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg",
-  },
-  {
-    name: "Байкал",
-    link: "https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg",
-  },
-];
+let currentUserId = null;
 
 const placesList = document.querySelector(".places__list");
 const template = document.querySelector("#card-template").content;
@@ -48,14 +32,32 @@ const openImageHandler = (evt) => {
   openPopup(imagePopup);
 };
 
-initialCards.forEach((data) => {
+function renderCard(data) {
   const cardElement = createCard(data, template, {
-    deleteCallback: deleteCard,
-    likeCallback: likeCard,
+    deleteCallback: (evt) => handleDeleteCard(evt, data),
+    likeCallback: (evt) => handleLikeCard(evt, data),
     clickCallback: openImageHandler
   });
-  placesList.append(cardElement);
-});
+  const likeBtn = cardElement.querySelector('.card__like-button');
+  const likeCount = cardElement.querySelector('.card__like-count');
+  if (likeCount) likeCount.textContent = data.likes.length;
+  if (data.likes.some(user => user._id === currentUserId)) {
+    likeBtn.classList.add('card__like-button_is-active');
+  }
+  const deleteBtn = cardElement.querySelector('.card__delete-button');
+  if (data.owner && data.owner._id !== currentUserId) {
+    deleteBtn.style.display = 'none';
+  }
+  return cardElement;
+}
+
+function renderCards(cards) {
+  placesList.innerHTML = '';
+  cards.forEach(card => {
+    const cardElement = renderCard(card);
+    placesList.append(cardElement);
+  });
+}
 
 /* Формы */
 
@@ -80,38 +82,41 @@ enableValidation(validationConfig);
 
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
-
-  const nameValue = profileNameInput.value;
-  const jobValue = jobInput.value;
-
-  const nameDisplay = document.querySelector(".profile__title");
-  const jobDisplay = document.querySelector(".profile__description");
-
-  nameDisplay.textContent = nameValue;
-  jobDisplay.textContent = jobValue;
-  editProfileFormElement.reset();
-  closePopup(evt);
+  const button = editProfileFormElement.querySelector(validationConfig.submitButtonSelector);
+  const oldText = button.textContent;
+  button.textContent = 'Сохранение...';
+  updateUserInfo(profileNameInput.value, jobInput.value)
+    .then((data) => {
+      document.querySelector(".profile__title").textContent = data.name;
+      document.querySelector(".profile__description").textContent = data.about;
+      closePopup(evt);
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      button.textContent = oldText;
+    });
 }
 
 const handlePlaceFormSubmit = (evt) => {
   evt.preventDefault();
-
-  const cardElement = createCard(
-    {
-      name: placeNameInput.value,
-      link: linkInput.value,
-    },
-    template,
-    {
-        deleteCallback: deleteCard,
-        likeCallback: likeCard,
-        clickCallback: openImageHandler
-    }
-  );
-
-  placesList.prepend(cardElement);
-  newPlaceFormElement.reset();
-  closePopup(evt);
+  const button = newPlaceFormElement.querySelector(validationConfig.submitButtonSelector);
+  const oldText = button.textContent;
+  button.textContent = 'Сохранение...';
+  apiAddCard(placeNameInput.value, linkInput.value)
+    .then(card => {
+      const cardElement = renderCard(card);
+      placesList.prepend(cardElement);
+      closePopup(evt);
+      newPlaceFormElement.reset();
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      button.textContent = oldText;
+    });
 };
 
 const handleNewCardPopup = (evt) => {
@@ -151,3 +156,42 @@ newCardButton.addEventListener("click", handleNewCardPopup);
 newPlaceFormElement.addEventListener("submit", handlePlaceFormSubmit);
 editProfileFormElement.addEventListener("submit", handleProfileFormSubmit);
 
+Promise.all([getUserInfo(), getInitialCards()])
+  .then(([user, cards]) => {
+    currentUserId = user._id;
+    document.querySelector(".profile__title").textContent = user.name;
+    document.querySelector(".profile__description").textContent = user.about;
+    document.querySelector(".profile__image").style.backgroundImage = `url(${user.avatar})`;
+    renderCards(cards);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+function handleDeleteCard(evt, data) {
+  if (confirm('Удалить карточку?')) {
+    apiDeleteCard(data._id)
+      .then(() => {
+        evt.target.closest('.card').remove();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+}
+
+function handleLikeCard(evt, data) {
+  const likeBtn = evt.target;
+  const cardElement = likeBtn.closest('.card');
+  const likeCount = cardElement.querySelector('.card__like-count');
+  const isLiked = likeBtn.classList.contains('card__like-button_is-active');
+  const apiMethod = isLiked ? apiUnlikeCard : apiLikeCard;
+  apiMethod(data._id)
+    .then((updatedCard) => {
+      likeBtn.classList.toggle('card__like-button_is-active');
+      if (likeCount) likeCount.textContent = updatedCard.likes.length;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}

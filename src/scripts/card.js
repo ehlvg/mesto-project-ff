@@ -8,14 +8,14 @@ export const createCard = (
   const cardTitle = cardElement.querySelector(".card__title");
   const deleteButton = cardElement.querySelector(".card__delete-button");
   const cardLike = cardElement.querySelector(".card__like-button");
-
+  let likeCount = cardElement.querySelector('.card__like-count');
   cardTitle.textContent = data.name;
   cardImage.src = data.link;
   cardImage.alt = `Фотография места: ${data.name}`;
+  likeCount.textContent = data.likes ? data.likes.length : 0;
   deleteButton.addEventListener("click", callbackConfiguration.deleteCallback);
   cardLike.addEventListener("click", callbackConfiguration.likeCallback);
   cardImage.addEventListener("click", callbackConfiguration.clickCallback);
-
   return cardElement;
 };
 

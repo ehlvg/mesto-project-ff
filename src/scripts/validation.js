@@ -115,4 +115,4 @@ if (editPopup) {
   editPopup.addEventListener('open', () => clearValidation(editProfileForm));
 }
 
-export { enableValidation, clearValidation };
+export { enableValidation, clearValidation, toggleButtonState };
