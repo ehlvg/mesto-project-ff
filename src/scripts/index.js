@@ -34,29 +34,14 @@ const openImageHandler = (evt) => {
   openPopup(imagePopup);
 };
 
-function renderCard(data) {
-  const cardElement = createCard(data, template, {
-    deleteCallback: (evt) => handleDeleteCard(evt, data),
-    likeCallback: (evt) => handleLikeCard(evt, data),
-    clickCallback: openImageHandler
-  });
-  const likeBtn = cardElement.querySelector('.card__like-button');
-  const likeCount = cardElement.querySelector('.card__like-count');
-  if (likeCount) likeCount.textContent = data.likes.length;
-  if (data.likes.some(user => user._id === currentUserId)) {
-    likeBtn.classList.add('card__like-button_is-active');
-  }
-  const deleteBtn = cardElement.querySelector('.card__delete-button');
-  if (data.owner && data.owner._id !== currentUserId) {
-    deleteBtn.style.display = 'none';
-  }
-  return cardElement;
-}
-
 function renderCards(cards) {
   placesList.innerHTML = '';
   cards.forEach(card => {
-    const cardElement = renderCard(card);
+    const cardElement = createCard(card, template, {
+      deleteCallback: (evt) => handleDeleteCard(evt, card),
+      likeCallback: (evt) => handleLikeCard(evt, card),
+      clickCallback: openImageHandler
+    }, currentUserId);
     placesList.append(cardElement);
   });
 }
