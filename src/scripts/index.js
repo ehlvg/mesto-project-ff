@@ -96,7 +96,11 @@ const handlePlaceFormSubmit = (evt) => {
   button.textContent = 'Сохранение...';
   apiAddCard(placeNameInput.value, linkInput.value)
     .then(card => {
-      const cardElement = renderCard(card);
+      const cardElement = createCard(card, template, {
+        deleteCallback: (evt) => handleDeleteCard(evt, card),
+        likeCallback: (evt) => handleLikeCard(evt, card),
+        clickCallback: openImageHandler
+      }, currentUserId);
       placesList.prepend(cardElement);
       closePopup(evt);
       newPlaceFormElement.reset();
