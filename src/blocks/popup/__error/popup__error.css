@@ -6,10 +6,6 @@
   display: none;
 }
 
-.popup__input:invalid ~ .popup__error {
-  display: block;
-} 
-
 .popup__error_visible {
   display: block;
 }

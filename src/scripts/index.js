@@ -9,7 +9,8 @@ import {
   addCard as apiAddCard,
   deleteCard as apiDeleteCard,
   likeCard as apiLikeCard,
-  unlikeCard as apiUnlikeCard
+  unlikeCard as apiUnlikeCard,
+  updateUserAvatar as apiUserAvatar
 } from "./api.js";
 
 let currentUserId = null;
@@ -20,6 +21,7 @@ const popupCloseButtons = document.querySelectorAll(".popup__close");
 const popups = document.querySelectorAll(".popup");
 const editProfileButton = document.querySelector(".profile__edit-button");
 const newCardButton = document.querySelector(".profile__add-button");
+const profileImage = document.querySelector(".profile__image");
 
 const openImageHandler = (evt) => {
   const card = evt.target.closest(".card");
@@ -68,6 +70,9 @@ const jobInput = editProfileFormElement.elements["description"];
 const newPlaceFormElement = document.forms["new-place"];
 const placeNameInput = newPlaceFormElement.elements["place-name"];
 const linkInput = newPlaceFormElement.elements["link"];
+
+const avatarFormElement = document.forms["avatar-form"];
+const avatarInput = avatarFormElement.elements["avatar"];
 
 const validationConfig = {
   formSelector: '.popup__form',
@@ -125,6 +130,44 @@ const handleNewCardPopup = (evt) => {
   document.forms["new-place"].reset();
   clearValidation(document.forms["new-place"], validationConfig);
 };
+
+const handleAvatarPopup = (evt) => {
+  const popup = document.querySelector(".popup_type_avatar");
+  openPopup(popup);
+  document.forms["avatar-form"].reset();
+  clearValidation(document.forms["avatar-form"], validationConfig);
+};
+
+const handleAvatarFormSubmit = (evt) => {
+  evt.preventDefault();
+  const button = avatarFormElement.querySelector(validationConfig.submitButtonSelector);
+  const oldText = button.textContent;
+  button.textContent = 'Сохранение...';
+  apiUserAvatar(avatarInput.value)
+    .then((data) => {
+      document.querySelector(".profile__image").style.backgroundImage = `url(${data.avatar})`;
+      closePopup(evt);
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      button.textContent = oldText;
+    });
+};
+
+const avatarPopup = document.querySelector('.popup_type_avatar');
+if (avatarPopup) {
+  avatarPopup.addEventListener('transitionend', (evt) => {
+    if (!avatarPopup.classList.contains('popup_is-opened')) {
+      clearValidation(document.forms["avatar-form"], validationConfig);
+    }
+  });
+}
+
+profileImage.addEventListener("click", handleAvatarPopup);
+avatarFormElement.addEventListener("submit", handleAvatarFormSubmit);
+
 
 const handleEditProfilePopup = (evt) => {
   const popup = document.querySelector(".popup_type_edit");
